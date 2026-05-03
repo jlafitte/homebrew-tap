@@ -1,4 +1,4 @@
-# Homebrew Tap for Gemini CLI Tools
+# Homebrew Tap
 
 This repository contains Homebrew formulae for tools that are not available in the official Homebrew core or other common taps.
 
@@ -7,7 +7,7 @@ This repository contains Homebrew formulae for tools that are not available in t
 To add this tap to your Homebrew installation, run:
 
 ```bash
-brew tap allenk/homebrew-tap
+brew tap jlafitte/homebrew-tap
 ```
 
 ## Available Formulae
