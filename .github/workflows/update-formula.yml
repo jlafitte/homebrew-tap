@@ -5,11 +5,14 @@ on:
   workflow_dispatch: # Lets you trigger it manually for testing
 
 jobs:
-  update-gemini:
+  update-formula:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Tap
         uses: actions/checkout@v4
+
+      - name: Tap internal repo
+        run: brew tap ${{ github.repository_owner }}/homebrew-tap
 
       - name: Update GeminiWatermarkTool
         uses: dawidd6/action-homebrew-bump-formula@v3
