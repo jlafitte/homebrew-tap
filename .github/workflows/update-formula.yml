@@ -12,20 +12,22 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Homebrew
+        id: set-up-homebrew
         uses: Homebrew/actions/setup-homebrew@main
+        with:
+          test-bot: false # Prevents cloning 1GB+ of homebrew-core
+          debug: false
         env:
-          HOMEBREW_NO_INSTALL_FROM_API: "" # Enable the fast API-based metadata
-          HOMEBREW_NO_AUTO_UPDATE: "1" # Skip updating the entire Homebrew tree
+          HOMEBREW_NO_AUTO_UPDATE: "1" # Skips unnecessary environment updates
+          HOMEBREW_NO_INSTALL_FROM_API: "" # Forces the fast API-based metadata
           HOMEBREW_NO_ENV_HINTS: "1" # Clean up the logs by hiding setup tips
-
-      - name: Tap internal repo
-        run: brew tap ${{ github.repository_owner }}/homebrew-tap
 
       - name: Update GeminiWatermarkTool
         uses: dawidd6/action-homebrew-bump-formula@v3
         with:
           token: ${{ secrets.GH_TOKEN }}
           formula: gemini-watermark-tool
+          tap: ${{ github.repository }} # Explicitly tells the action where your formula lives
           livecheck: true
           force: true
           no_fork: true
@@ -35,6 +37,7 @@ jobs:
         with:
           token: ${{ secrets.GH_TOKEN }}
           formula: gwt-mini
+          tap: ${{ github.repository }} # Ensures the second formula is found in your tap
           livecheck: true
           force: true
           no_fork: true
