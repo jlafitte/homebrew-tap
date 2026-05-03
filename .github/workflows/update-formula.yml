@@ -11,6 +11,9 @@ jobs:
       - name: Checkout Tap
         uses: actions/checkout@v4
 
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
       - name: Tap internal repo
         run: brew tap ${{ github.repository_owner }}/homebrew-tap
 
