@@ -1,0 +1,30 @@
+name: Auto-update Formula
+on:
+  schedule:
+    - cron: "0 12 * * *" # Checks every day at noon
+  workflow_dispatch: # Lets you trigger it manually for testing
+
+jobs:
+  update-gemini:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Tap
+        uses: actions/checkout@v4
+
+      - name: Update GeminiWatermarkTool
+        uses: dawidd6/action-homebrew-bump-formula@v3
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          formula: gemini-watermark-tool
+          livecheck: true
+          force: true
+          no_fork: true
+
+      - name: Update gwt-mini
+        uses: dawidd6/action-homebrew-bump-formula@v3
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          formula: gwt-mini
+          livecheck: true
+          force: true
+          no_fork: true

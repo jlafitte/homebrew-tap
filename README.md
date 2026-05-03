@@ -1,6 +1,6 @@
 # Homebrew Tap
 
-This repository contains Homebrew formulae for tools that are not available in the official Homebrew core or other common taps.
+This repository contains Homebrew formulae for tools that I use that are not available in the official Homebrew core or other common taps.
 
 ## How to use this tap
 

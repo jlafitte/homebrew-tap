@@ -5,6 +5,11 @@ class GwtMini < Formula
   sha256 "59b2145405a9a3814c716b97284dff133f7a62b1d86efc164c320cd00fc5c87a"
   license "MIT"
 
+  livecheck do
+    url "https://github.com/allenk/GeminiWatermarkTool/releases"
+    strategy :github_latest
+  end
+
   def install
     # The binary inside the zip is named 'gwt-mini'
     bin.install "gwt-mini"
