@@ -12,7 +12,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@master
+        uses: Homebrew/actions/setup-homebrew@main
+        env:
+          HOMEBREW_NO_INSTALL_FROM_API: "" # Enable the fast API-based metadata
+          HOMEBREW_NO_AUTO_UPDATE: "1" # Skip updating the entire Homebrew tree
+          HOMEBREW_NO_ENV_HINTS: "1" # Clean up the logs by hiding setup tips
 
       - name: Tap internal repo
         run: brew tap ${{ github.repository_owner }}/homebrew-tap
