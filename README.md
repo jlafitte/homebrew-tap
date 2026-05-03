@@ -22,6 +22,16 @@ A tool to remove watermarks using reverse alpha blending.
 brew install gemini-watermark-tool
 ```
 
+### [GWT Mini](https://github.com/allenk/GeminiWatermarkTool)
+
+Minimal CLI-only version of GeminiWatermarkTool.
+
+**Installation:**
+
+```bash
+brew install gwt-mini
+```
+
 ## License
 
 This tap is licensed under the [MIT License](LICENSE).
