@@ -16,9 +16,13 @@ MIRRORS = [
     "ayera",
     "nchc",
     "jaist",
-    "master.dl",
     "freefr",
     "kumasan",
+    "cfhcable",
+    "iweb",
+    "phoenixnap",
+    "superb-sea2",
+    "tenet",
 ]
 
 
@@ -46,17 +50,15 @@ def get_sha256(version, filename):
 
     # Try multiple mirrors
     for mirror in MIRRORS:
-        url = f"https://{mirror}.sourceforge.net/project/filezilla/FileZilla_Client/{version}/{filename}"
-        # Some mirrors use a slightly different path
-        if mirror == "master.dl":
-            url = f"https://master.dl.sourceforge.net/project/filezilla/FileZilla_Client/{version}/{filename}"
+        # Correct SourceForge mirror pattern is mirror.dl.sourceforge.net
+        url = f"https://{mirror}.dl.sourceforge.net/project/filezilla/FileZilla_Client/{version}/{filename}"
 
         print(f"Trying mirror {mirror}: {url}")
 
         try:
             # -L follows redirects
             # -f fails on 404/500
-            # -s is silent but we want error info if it fails
+            # --connect-timeout to skip dead mirrors quickly
             result = subprocess.run(
                 [
                     "curl",
@@ -64,6 +66,8 @@ def get_sha256(version, filename):
                     "-f",
                     "-A",
                     USER_AGENT,
+                    "--connect-timeout",
+                    "10",
                     "-e",
                     "https://filezilla-project.org/",
                     "-o",
@@ -74,7 +78,7 @@ def get_sha256(version, filename):
             )
 
             if result.returncode != 0:
-                print(f"Mirror {mirror} failed (HTTP error or connection issue).")
+                print(f"Mirror {mirror} failed or timed out.")
                 continue
 
             # Check if we actually got a file and not an HTML error page
