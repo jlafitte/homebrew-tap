@@ -1,8 +1,8 @@
 name: Auto-update Formula
 on:
   schedule:
-    - cron: "0 12 * * *" # Checks every day at noon
-  workflow_dispatch: # Lets you trigger it manually for testing
+    - cron: "0 12 * * *"
+  workflow_dispatch:
 
 jobs:
   update-formula:
@@ -15,19 +15,18 @@ jobs:
         id: set-up-homebrew
         uses: Homebrew/actions/setup-homebrew@main
         with:
-          test-bot: false # Prevents cloning 1GB+ of homebrew-core
           debug: false
         env:
-          HOMEBREW_NO_AUTO_UPDATE: "1" # Skips unnecessary environment updates
-          HOMEBREW_NO_INSTALL_FROM_API: "" # Forces the fast API-based metadata
-          HOMEBREW_NO_ENV_HINTS: "1" # Clean up the logs by hiding setup tips
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+          HOMEBREW_NO_INSTALL_FROM_API: ""
+          HOMEBREW_NO_ENV_HINTS: "1"
 
       - name: Update GeminiWatermarkTool
         uses: dawidd6/action-homebrew-bump-formula@v3
         with:
           token: ${{ secrets.GH_TOKEN }}
           formula: gemini-watermark-tool
-          tap: ${{ github.repository }} # Explicitly tells the action where your formula lives
+          tap: ${{ github.repository }}
           livecheck: true
           force: true
           no_fork: true
@@ -37,7 +36,7 @@ jobs:
         with:
           token: ${{ secrets.GH_TOKEN }}
           formula: gwt-mini
-          tap: ${{ github.repository }} # Ensures the second formula is found in your tap
+          tap: ${{ github.repository }}
           livecheck: true
           force: true
           no_fork: true
