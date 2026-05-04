@@ -32,6 +32,16 @@ Minimal CLI-only version of GeminiWatermarkTool.
 brew install gwt-mini
 ```
 
+### [FileZilla](https://filezilla-project.org/)
+
+FTP, FTPS and SFTP client.
+
+**Installation:**
+
+```bash
+brew install --cask filezilla
+```
+
 ## License
 
 This tap is licensed under the [MIT License](LICENSE).

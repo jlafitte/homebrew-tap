@@ -1,0 +1,32 @@
+name: Auto-update FileZilla Cask
+on:
+  schedule:
+    - cron: "0 13 * * *" # Checks every day at 1 PM
+  workflow_dispatch:
+
+jobs:
+  update-filezilla:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Tap
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Run Update Script
+        run: python scripts/update-filezilla.py
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Casks/filezilla.rb
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update FileZilla to latest version"
+            git push
+          fi
