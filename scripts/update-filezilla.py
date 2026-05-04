@@ -3,36 +3,48 @@ import os
 import re
 import subprocess
 import sys
-import urllib.request
 
 CASK_PATH = "Casks/filezilla.rb"
 OFFICIAL_FEED = "https://filezilla-project.org/newsfeed.php"
-# The discovered "backdoor" User-Agent
+# The "backdoor" User-Agent that FileZilla's servers trust
 BASE_USER_AGENT = "FileZilla/{version}"
 
 
 def get_latest_version():
     print("Checking official FileZilla news feed for latest version...")
-    # Standard browser UA for checking the feed
-    req = urllib.request.Request(
-        OFFICIAL_FEED,
-        headers={
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:121.0) Gecko/20100101 Firefox/121.0",
-        },
-    )
+    # Use an older but valid FileZilla UA to check the feed
     try:
-        with urllib.request.urlopen(req) as response:
-            xml = response.read().decode("utf-8")
-            matches = re.findall(
-                r"FileZilla Client ([0-9]+\.[0-9]+\.[0-9]+(?:\.[0-9]+)?) released", xml
-            )
-            if matches:
-                return sorted(
-                    list(set(matches)), key=lambda v: [int(x) for x in v.split(".")]
-                )[-1]
+        result = subprocess.run(
+            [
+                "curl",
+                "-L",
+                "-f",
+                "-s",
+                "-A",
+                "FileZilla/3.67.0",
+                OFFICIAL_FEED,
+            ],
+            capture_output=True,
+        )
+
+        if result.returncode != 0:
+            print(f"Failed to fetch news feed. Curl error: {result.stderr.decode()}")
             return None
+
+        xml = result.stdout.decode("utf-8")
+        matches = re.findall(
+            r"FileZilla Client ([0-9]+\.[0-9]+\.[0-9]+(?:\.[0-9]+)?) released", xml
+        )
+        if matches:
+            return sorted(
+                list(set(matches)), key=lambda v: [int(x) for x in v.split(".")]
+            )[-1]
+
+        print("Could not find version matches in the feed content.")
+        print(f"Content preview: {xml[:200]}")
+        return None
     except Exception as e:
-        print(f"Failed to check official feed: {e}")
+        print(f"Exception during version check: {e}")
         return None
 
 
@@ -45,7 +57,6 @@ def get_sha256(version, arch):
     print(f"Downloading {filename} using User-Agent: {user_agent}")
 
     try:
-        # Use the special User-Agent to bypass the token requirement
         result = subprocess.run(
             [
                 "curl",
@@ -104,7 +115,9 @@ def main():
     print(f"Current version in Tap: {current_version}")
     print(f"Latest version online:  {latest_version}")
 
-    if current_version == latest_version and "PLACEHOLDER" not in current_content:
+    is_placeholder = "PLACEHOLDER" in current_content
+
+    if current_version == latest_version and not is_placeholder:
         print("✅ FileZilla is up to date.")
         return
 
@@ -114,7 +127,7 @@ def main():
     intel_sha = get_sha256(latest_version, "macos-x86")
 
     if not arm_sha or not intel_sha:
-        print("❌ Failed to get SHAs using the User-Agent trick.")
+        print("❌ Failed to get SHAs.")
         sys.exit(1)
 
     update_cask(latest_version, arm_sha, intel_sha)
