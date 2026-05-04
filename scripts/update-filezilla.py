@@ -1,5 +1,7 @@
 import hashlib
+import os
 import re
+import subprocess
 import sys
 import urllib.request
 
@@ -9,7 +11,13 @@ USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36
 
 
 def get_latest_version():
-    req = urllib.request.Request(UPTODOWN_URL, headers={"User-Agent": USER_AGENT})
+    req = urllib.request.Request(
+        UPTODOWN_URL,
+        headers={
+            "User-Agent": USER_AGENT,
+            "Referer": "https://filezilla.en.uptodown.com/mac",
+        },
+    )
     with urllib.request.urlopen(req) as response:
         html = response.read().decode("utf-8")
         matches = re.findall(r"3\.[0-9]+\.[0-9]+(?:\.[0-9]+)?", html)
@@ -18,17 +26,47 @@ def get_latest_version():
 
 def get_sha256(url):
     print(f"Downloading from {url}...")
-    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    temp_file = "fz_temp.tar.bz2"
     try:
-        with urllib.request.urlopen(req) as response:
-            data = response.read()
-            # FileZilla archives are typically > 10MB
-            if len(data) < 1000000:
-                print(
-                    f"Error: Downloaded file too small ({len(data)} bytes). Likely blocked."
-                )
-                return None
-            return hashlib.sha256(data).hexdigest()
+        # Using curl to handle the SourceForge redirect mess
+        # -L follows redirects
+        # -A sets user agent
+        # -e sets referer
+        result = subprocess.run(
+            [
+                "curl",
+                "-L",
+                "-A",
+                USER_AGENT,
+                "-e",
+                "https://filezilla-project.org/",
+                "-o",
+                temp_file,
+                url,
+            ],
+            capture_output=True,
+        )
+
+        if result.returncode != 0:
+            print(f"Curl failed: {result.stderr.decode()}")
+            return None
+
+        if not os.path.exists(temp_file) or os.path.getsize(temp_file) < 1000000:
+            print("Error: Downloaded file too small or missing. Likely blocked.")
+            # If it's small, it might be an error page. Let's see what's in it.
+            if os.path.exists(temp_file):
+                with open(temp_file, "r", errors="ignore") as f:
+                    print(f"File content start: {f.read(100)}")
+                os.remove(temp_file)
+            return None
+
+        sha256_hash = hashlib.sha256()
+        with open(temp_file, "rb") as f:
+            for byte_block in iter(lambda: f.read(4096), b""):
+                sha256_hash.update(byte_block)
+
+        os.remove(temp_file)
+        return sha256_hash.hexdigest()
     except Exception as e:
         print(f"Download failed: {e}")
         return None
