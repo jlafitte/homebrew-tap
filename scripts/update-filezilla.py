@@ -6,10 +6,13 @@ import sys
 import urllib.request
 
 CASK_PATH = "Casks/filezilla.rb"
-UPTODOWN_URL = "https://filezilla.en.uptodown.com/mac/versions"
+# SourceForge RSS is the most reliable way to find versions that actually exist on mirrors
+SOURCEFORGE_RSS = (
+    "https://sourceforge.net/projects/filezilla/rss?path=/FileZilla_Client"
+)
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
-# A list of known SourceForge mirrors that often bypass the Cloudflare landing page
+# A list of known SourceForge mirrors
 MIRRORS = [
     "netix",
     "versaweb",
@@ -27,21 +30,27 @@ MIRRORS = [
 
 
 def get_latest_version():
-    print("Checking for latest version...")
+    print("Checking SourceForge RSS for latest version...")
     req = urllib.request.Request(
-        UPTODOWN_URL,
-        headers={
-            "User-Agent": USER_AGENT,
-            "Referer": "https://filezilla.en.uptodown.com/mac",
-        },
+        SOURCEFORGE_RSS,
+        headers={"User-Agent": USER_AGENT},
     )
     try:
         with urllib.request.urlopen(req) as response:
-            html = response.read().decode("utf-8")
-            matches = re.findall(r"3\.[0-9]+\.[0-9]+(?:\.[0-9]+)?", html)
-            return matches[0] if matches else None
+            xml = response.read().decode("utf-8")
+            # Look for version numbers in the RSS feed
+            # Pattern matches things like /FileZilla_Client/3.69.3/
+            matches = re.findall(
+                r"/FileZilla_Client/([0-9]+\.[0-9]+\.[0-9]+(?:\.[0-9]+)?)/", xml
+            )
+            if matches:
+                # Get the most recent one (usually the first)
+                return sorted(
+                    list(set(matches)), key=lambda v: [int(x) for x in v.split(".")]
+                )[-1]
+            return None
     except Exception as e:
-        print(f"Failed to check Uptodown: {e}")
+        print(f"Failed to check SourceForge RSS: {e}")
         return None
 
 
@@ -50,15 +59,11 @@ def get_sha256(version, filename):
 
     # Try multiple mirrors
     for mirror in MIRRORS:
-        # Correct SourceForge mirror pattern is mirror.dl.sourceforge.net
         url = f"https://{mirror}.dl.sourceforge.net/project/filezilla/FileZilla_Client/{version}/{filename}"
 
         print(f"Trying mirror {mirror}: {url}")
 
         try:
-            # -L follows redirects
-            # -f fails on 404/500
-            # --connect-timeout to skip dead mirrors quickly
             result = subprocess.run(
                 [
                     "curl",
@@ -67,7 +72,7 @@ def get_sha256(version, filename):
                     "-A",
                     USER_AGENT,
                     "--connect-timeout",
-                    "10",
+                    "15",
                     "-e",
                     "https://filezilla-project.org/",
                     "-o",
@@ -81,21 +86,17 @@ def get_sha256(version, filename):
                 print(f"Mirror {mirror} failed or timed out.")
                 continue
 
-            # Check if we actually got a file and not an HTML error page
             if not os.path.exists(temp_file):
                 continue
 
             size = os.path.getsize(temp_file)
             if size < 1000000:
                 print(
-                    f"Mirror {mirror} returned a file that is too small ({size} bytes). Likely a redirect or error page."
+                    f"Mirror {mirror} returned a file that is too small ({size} bytes)."
                 )
-                with open(temp_file, "r", errors="ignore") as f:
-                    print(f"Preview: {f.read(100)}")
                 os.remove(temp_file)
                 continue
 
-            # Success! Calculate hash
             print(f"Successfully downloaded {filename} from {mirror} ({size} bytes).")
             sha256_hash = hashlib.sha256()
             with open(temp_file, "rb") as f:
@@ -121,7 +122,6 @@ def update_cask(version, arm_sha, intel_sha):
 
     content = re.sub(r'version ".*"', f'version "{version}"', content)
     content = re.sub(r'sha256 arm:\s+".*"', f'sha256 arm:   "{arm_sha}"', content)
-    # The intel line might be harder to match if it's not the first sha256 line
     content = re.sub(r'intel:\s+".*"', f'intel: "{intel_sha}"', content)
 
     with open(CASK_PATH, "w") as f:
@@ -131,7 +131,7 @@ def update_cask(version, arm_sha, intel_sha):
 def main():
     latest_version = get_latest_version()
     if not latest_version:
-        print("Could not find latest version.")
+        print("Could not find latest version on SourceForge.")
         sys.exit(1)
 
     with open(CASK_PATH, "r") as f:
@@ -140,14 +140,28 @@ def main():
         current_version = version_match.group(1) if version_match else None
 
     print(f"Current version: {current_version}")
-    print(f"Latest version:  {latest_version}")
+    print(f"Latest version (on SourceForge): {latest_version}")
 
-    needs_update = (current_version != latest_version) or (
-        "PLACEHOLDER" in current_content
-    )
+    # If the version in the Cask is actually NEWER than SourceForge (manual update),
+    # we don't want to "downgrade" it. But we DO want to fix PLACEHOLDERs.
+    is_placeholder = "PLACEHOLDER" in current_content
 
-    if not needs_update:
+    if current_version == latest_version and not is_placeholder:
         print("Already up to date.")
+        return
+
+    # Simple version comparison
+    def version_tuple(v):
+        return tuple(map(int, (v.split("."))))
+
+    if (
+        not is_placeholder
+        and current_version
+        and version_tuple(current_version) > version_tuple(latest_version)
+    ):
+        print(
+            f"Cask version ({current_version}) is newer than SourceForge ({latest_version}). Waiting for mirrors."
+        )
         return
 
     print(f"Updating to {latest_version}...")
