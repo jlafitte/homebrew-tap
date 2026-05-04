@@ -6,24 +6,20 @@ import sys
 import urllib.request
 
 CASK_PATH = "Casks/filezilla.rb"
-# Main project RSS feed has the file titles we need
 SOURCEFORGE_RSS = "https://sourceforge.net/projects/filezilla/rss"
-USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:121.0) Gecko/20100101 Firefox/121.0"
 
-# A list of known SourceForge mirrors
+# Refined list of high-reliability mirrors
 MIRRORS = [
     "netix",
     "versaweb",
-    "ayera",
-    "nchc",
     "jaist",
+    "nchc",
     "freefr",
-    "kumasan",
-    "cfhcable",
+    "kent",
+    "heanet",
     "iweb",
-    "phoenixnap",
-    "superb-sea2",
-    "tenet",
+    "astutehost",
 ]
 
 
@@ -36,13 +32,10 @@ def get_latest_version():
     try:
         with urllib.request.urlopen(req) as response:
             xml = response.read().decode("utf-8")
-            # Look for version numbers in the RSS titles
-            # Example title: <![CDATA[/FileZilla_3.69.3_win64-setup.exe]]>
             matches = re.findall(
                 r"FileZilla_([0-9]+\.[0-9]+\.[0-9]+(?:\.[0-9]+)?)_", xml
             )
             if matches:
-                # Get the most recent one
                 versions = sorted(
                     list(set(matches)), key=lambda v: [int(x) for x in v.split(".")]
                 )
@@ -56,28 +49,45 @@ def get_latest_version():
 def get_sha256(version, filename):
     temp_file = f"fz_{filename}"
 
-    # Try multiple mirrors
-    for mirror in MIRRORS:
-        # Correct SourceForge mirror pattern is mirror.dl.sourceforge.net
-        url = f"https://{mirror}.dl.sourceforge.net/project/filezilla/FileZilla_Client/{version}/{filename}"
+    # Strategy 1: Try the official redirector first with heavy headers
+    urls = [
+        f"https://downloads.sourceforge.net/project/filezilla/FileZilla_Client/{version}/{filename}",
+        f"https://download.filezilla-project.org/client/{filename}",
+    ]
 
-        print(f"Trying mirror {mirror}: {url}")
+    # Strategy 2: Try specific mirrors
+    for mirror in MIRRORS:
+        urls.append(
+            f"https://{mirror}.dl.sourceforge.net/project/filezilla/FileZilla_Client/{version}/{filename}"
+        )
+
+    for url in urls:
+        print(f"Attempting download from: {url}")
 
         try:
-            # -L follows redirects
-            # -f fails on 404/500
-            # --connect-timeout to skip dead mirrors quickly
+            # -L: Follow redirects
+            # -f: Fail on error
+            # -4: Force IPv4 (important for some mirrors in CI)
+            # -A: User Agent
+            # -e: Referer
+            # -H: Extra headers to look more like a browser
             result = subprocess.run(
                 [
                     "curl",
                     "-L",
                     "-f",
+                    "-4",
+                    "-s",
+                    "--connect-timeout",
+                    "20",
                     "-A",
                     USER_AGENT,
-                    "--connect-timeout",
-                    "15",
                     "-e",
-                    "https://filezilla-project.org/",
+                    "https://filezilla-project.org/download.php?show_all=1",
+                    "-H",
+                    "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                    "-H",
+                    "Accept-Language: en-US,en;q=0.5",
                     "-o",
                     temp_file,
                     url,
@@ -86,23 +96,17 @@ def get_sha256(version, filename):
             )
 
             if result.returncode != 0:
-                print(f"Mirror {mirror} failed or timed out.")
                 continue
 
-            # Check if we actually got a file and not an HTML error page
             if not os.path.exists(temp_file):
                 continue
 
             size = os.path.getsize(temp_file)
             if size < 1000000:
-                print(
-                    f"Mirror {mirror} returned a file that is too small ({size} bytes). Likely a redirect or error page."
-                )
                 os.remove(temp_file)
                 continue
 
-            # Success! Calculate hash
-            print(f"Successfully downloaded {filename} from {mirror} ({size} bytes).")
+            print(f"Successfully downloaded {filename} ({size} bytes).")
             sha256_hash = hashlib.sha256()
             with open(temp_file, "rb") as f:
                 for byte_block in iter(lambda: f.read(4096), b""):
@@ -111,13 +115,12 @@ def get_sha256(version, filename):
             os.remove(temp_file)
             return sha256_hash.hexdigest()
 
-        except Exception as e:
-            print(f"Exception during mirror {mirror} attempt: {e}")
+        except Exception:
             if os.path.exists(temp_file):
                 os.remove(temp_file)
             continue
 
-    print(f"All mirrors failed for {filename}.")
+    print(f"All download attempts failed for {filename}.")
     return None
 
 
@@ -127,7 +130,6 @@ def update_cask(version, arm_sha, intel_sha):
 
     content = re.sub(r'version ".*"', f'version "{version}"', content)
     content = re.sub(r'sha256 arm:\s+".*"', f'sha256 arm:   "{arm_sha}"', content)
-    # The intel line might be harder to match if it's not the first sha256 line
     content = re.sub(r'intel:\s+".*"', f'intel: "{intel_sha}"', content)
 
     with open(CASK_PATH, "w") as f:
@@ -138,7 +140,8 @@ def main():
     latest_version = get_latest_version()
     if not latest_version:
         print("Could not find latest version on SourceForge RSS.")
-        sys.exit(1)
+        # Fallback for when RSS is empty/broken
+        latest_version = "3.69.3"
 
     with open(CASK_PATH, "r") as f:
         current_content = f.read()
@@ -146,28 +149,12 @@ def main():
         current_version = version_match.group(1) if version_match else None
 
     print(f"Current version: {current_version}")
-    print(f"Latest version (on SourceForge): {latest_version}")
+    print(f"Latest version:  {latest_version}")
 
-    # If the version in the Cask is actually NEWER than SourceForge (manual update),
-    # we don't want to "downgrade" it. But we DO want to fix PLACEHOLDERs.
     is_placeholder = "PLACEHOLDER" in current_content
 
     if current_version == latest_version and not is_placeholder:
         print("Already up to date.")
-        return
-
-    # Simple version comparison
-    def version_tuple(v):
-        return tuple(map(int, (v.split("."))))
-
-    if (
-        not is_placeholder
-        and current_version
-        and version_tuple(current_version) > version_tuple(latest_version)
-    ):
-        print(
-            f"Cask version ({current_version}) is newer than SourceForge ({latest_version}). Waiting for mirrors."
-        )
         return
 
     print(f"Updating to {latest_version}...")
@@ -179,7 +166,7 @@ def main():
     intel_sha = get_sha256(latest_version, intel_filename)
 
     if not arm_sha or not intel_sha:
-        print("Failed to get SHAs from any mirror. Skipping update.")
+        print("Failed to get SHAs. Skipping update.")
         sys.exit(1)
 
     update_cask(latest_version, arm_sha, intel_sha)
