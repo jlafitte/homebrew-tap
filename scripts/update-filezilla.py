@@ -94,8 +94,12 @@ def update_cask(version, arm_sha, intel_sha):
         content = f.read()
 
     content = re.sub(r'version ".*"', f'version "{version}"', content)
+    # Update arm sha
     content = re.sub(r'sha256 arm:\s+".*"', f'sha256 arm:   "{arm_sha}"', content)
-    content = re.sub(r'intel:\s+".*"', f'intel: "{intel_sha}"', content)
+    # Update intel sha - specifically target the one that follows the arm sha on the next line
+    content = re.sub(
+        r'(sha256 arm:.*\n\s+)intel:\s+".*"', rf'\1intel: "{intel_sha}"', content
+    )
 
     with open(CASK_PATH, "w") as f:
         f.write(content)

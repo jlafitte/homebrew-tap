@@ -1,5 +1,5 @@
 cask "filezilla" do
-  arch arm: "macos-arm64", intel: "cce3d24c6affcecb01799c249f1da5646004dec5c2417f27449b483103b33c24"
+  arch arm: "macos-arm64", intel: "macos-x86"
 
   version "3.70.5"
   sha256 arm:   "9aefcc4343c90e62a0afb9f0abb715a21fa3afc11ab0b8980afc395872908525",
