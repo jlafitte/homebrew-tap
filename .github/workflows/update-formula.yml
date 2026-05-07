@@ -40,3 +40,13 @@ jobs:
           livecheck: true
           force: true
           no_fork: true
+
+      - name: Update uad-ng
+        uses: dawidd6/action-homebrew-bump-formula@v3
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          formula: uad-ng
+          tap: ${{ github.repository }}
+          livecheck: true
+          force: true
+          no_fork: true
