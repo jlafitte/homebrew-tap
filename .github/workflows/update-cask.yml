@@ -21,7 +21,10 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          VERSION=$(curl -sL https://api.github.com/repos/cormiertyshawn895/PixelPerfect/releases/latest | jq -r '.tag_name')
+          VERSION=$(curl -sL \
+            -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
+            -H "User-Agent: GitHub-Actions" \
+            https://api.github.com/repos/cormiertyshawn895/PixelPerfect/releases/latest | jq -r '.tag_name')
           brew bump-cask-pr \
             --version "$VERSION" \
             --no-fork \
