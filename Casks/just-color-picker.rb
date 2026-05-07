@@ -15,6 +15,7 @@ cask "just-color-picker" do
   app "Just Color Picker.app"
 
   zap trash: [
+    "~/.config/Just Color Picker.cfg*",
     "~/Library/Preferences/com.annystudio.colorpicker.plist",
     "~/Library/Saved Application State/com.annystudio.colorpicker.savedState",
   ]
