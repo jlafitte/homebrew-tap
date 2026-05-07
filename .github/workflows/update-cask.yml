@@ -22,7 +22,7 @@ jobs:
           HOMEBREW_NO_ENV_HINTS: "1"
 
       - name: Update PixelPerfect
-        uses: dawidd6/action-homebrew-bump-cask@v3
+        uses: macauley/action-homebrew-bump-cask@v1
         with:
           token: ${{ secrets.GH_TOKEN }}
           cask: pixelperfect
