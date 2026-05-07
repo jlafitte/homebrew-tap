@@ -18,8 +18,10 @@ jobs:
         env:
           HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
+          VERSION=$(curl -sL https://api.github.com/repos/cormiertyshawn895/PixelPerfect/releases/latest | jq -r '.tag_name')
           brew bump-cask-pr \
+            --version "$VERSION" \
             --no-fork \
             --no-browse \
-            --message "Update PixelPerfect to latest version" \
+            --message "Update PixelPerfect to $VERSION" \
             ${{ github.repository }}/pixelperfect

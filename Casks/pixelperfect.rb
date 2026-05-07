@@ -7,6 +7,11 @@ cask "pixelperfect" do
   desc "Increase the text size of iPhone and iPad apps on Mac"
   homepage "https://github.com/cormiertyshawn895/PixelPerfect"
 
+  livecheck do
+    url :url
+    strategy :github_latest
+  end
+
   app "Pixel Perfect.app"
 
   zap trash: [
