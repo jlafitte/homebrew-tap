@@ -4,7 +4,7 @@ cask "pixelperfect" do
 
   url "https://github.com/cormiertyshawn895/PixelPerfect/releases/download/#{version}/PixelPerfect.#{version}.zip"
   name "Pixel Perfect"
-  desc "Increase the text size of iPhone and iPad apps on Mac"
+  desc "Increase the text size of iPhone and iPad apps"
   homepage "https://github.com/cormiertyshawn895/PixelPerfect"
 
   livecheck do
