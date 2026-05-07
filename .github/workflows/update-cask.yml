@@ -18,6 +18,9 @@ jobs:
         env:
           HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           VERSION=$(curl -sL https://api.github.com/repos/cormiertyshawn895/PixelPerfect/releases/latest | jq -r '.tag_name')
           brew bump-cask-pr \
             --version "$VERSION" \
