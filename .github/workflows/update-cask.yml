@@ -12,7 +12,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Set up Homebrew
-        uses: Homebrew/actions/setup-homebrew@master
+        uses: Homebrew/actions/setup-homebrew@main
 
       - name: Update PixelPerfect
         env:
@@ -22,5 +22,4 @@ jobs:
             --no-fork \
             --no-browse \
             --message "Update PixelPerfect to latest version" \
-            --tap ${{ github.repository }} \
-            pixelperfect
+            ${{ github.repository }}/pixelperfect
