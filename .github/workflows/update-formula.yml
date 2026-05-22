@@ -21,6 +21,15 @@ jobs:
           HOMEBREW_NO_INSTALL_FROM_API: ""
           HOMEBREW_NO_ENV_HINTS: "1"
 
+      - name: Auto-merge existing PRs
+        run: |
+          for pr in $(gh pr list --head "bump-" --state open --json number --jq '.[].number'); do
+            echo "Merging existing PR $pr..."
+            gh pr merge --merge --auto --delete-branch "$pr" || echo "Failed to merge PR $pr"
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
       - name: Update GeminiWatermarkTool
         uses: dawidd6/action-homebrew-bump-formula@v7
         with:
@@ -51,8 +60,8 @@ jobs:
           force: true
           no_fork: true
 
-      - name: Auto-merge PRs
-        if: success()
+      - name: Auto-merge new PRs
+        if: always()
         run: |
           sleep 5
           for pr in $(gh pr list --head "bump-" --state open --json number --jq '.[].number'); do
