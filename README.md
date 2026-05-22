@@ -32,6 +32,16 @@ Minimal CLI-only version of GeminiWatermarkTool.
 brew install gwt-mini
 ```
 
+### [Universal Android Debloater](https://github.com/Universal-Debloater-Alliance/universal-android-debloater-next-generation)
+
+A tool to debloat non-rooted Android devices.
+
+**Installation:**
+
+```bash
+brew install uad-ng
+```
+
 ### [FileZilla](https://filezilla-project.org/)
 
 FTP, FTPS and SFTP client.
@@ -40,6 +50,26 @@ FTP, FTPS and SFTP client.
 
 ```bash
 brew install --cask filezilla
+```
+
+### [Just Color Picker](https://annystudio.com/software/colorpicker/)
+
+A tool to capture the color of any pixel on the screen.
+
+**Installation:**
+
+```bash
+brew install --cask just-color-picker
+```
+
+### [PixelPerfect](https://github.com/cormiertyshawn895/PixelPerfect)
+
+A tool for pixel-perfect layout verification.
+
+**Installation:**
+
+```bash
+brew install --cask pixelperfect
 ```
 
 ## License
