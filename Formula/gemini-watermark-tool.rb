@@ -1,8 +1,8 @@
 class GeminiWatermarkTool < Formula
   desc "Tool to remove watermarks using reverse alpha blending"
   homepage "https://github.com/allenk/GeminiWatermarkTool"
-  url "https://github.com/allenk/GeminiWatermarkTool/releases/download/v0.2.9/GeminiWatermarkTool-macOS-Universal.zip"
-  sha256 "2cbc76649d86177eed65aa12225d0ac2f51a452db49db2dff1bb20d13402bab1"
+  url "https://github.com/allenk/GeminiWatermarkTool/releases/download/v0.3.0/GeminiWatermarkTool-macOS-Universal.zip"
+  sha256 "8740fe924aeef5bf63acbd665334914a4eac61dc5aaf9bff6fc68c9c3a4793f9"
   license "MIT"
 
   livecheck do
