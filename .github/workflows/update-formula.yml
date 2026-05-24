@@ -25,7 +25,7 @@ jobs:
         run: |
           for pr in $(gh pr list --head "bump-" --state open --json number --jq '.[].number'); do
             echo "Merging existing PR $pr..."
-            gh pr merge --merge --auto --delete-branch "$pr" || echo "Failed to merge PR $pr"
+            gh pr merge --merge --delete-branch "$pr" || echo "Failed to merge PR $pr"
           done
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -66,7 +66,7 @@ jobs:
           sleep 5
           for pr in $(gh pr list --head "bump-" --state open --json number --jq '.[].number'); do
             echo "Merging PR $pr..."
-            gh pr merge --merge --auto --delete-branch "$pr" || echo "Failed to merge PR $pr"
+            gh pr merge --merge --delete-branch "$pr" || echo "Failed to merge PR $pr"
           done
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
