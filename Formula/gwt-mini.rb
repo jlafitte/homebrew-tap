@@ -1,8 +1,8 @@
 class GwtMini < Formula
   desc "Minimal CLI-only version of GeminiWatermarkTool"
   homepage "https://github.com/allenk/GeminiWatermarkTool"
-  url "https://github.com/allenk/GeminiWatermarkTool/releases/download/v0.3.0/gwt-mini-macos-universal.zip"
-  sha256 "2d2ba3bd15b1a91c8871962bc8ab4b9725a4fcbbe0bb1a0a168a6154393203a7"
+  url "https://github.com/allenk/GeminiWatermarkTool/releases/download/v0.3.1/gwt-mini-macos-universal.zip"
+  sha256 "a55f458250adfa74559366eaa4b9e52ec6e6eb4df72a5f9d8dc392994721e911"
   license "MIT"
 
   livecheck do
