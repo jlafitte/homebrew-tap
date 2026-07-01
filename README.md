@@ -64,7 +64,7 @@ brew install --cask just-color-picker
 
 ### [PixelPerfect](https://github.com/cormiertyshawn895/PixelPerfect)
 
-A tool for pixel-perfect layout verification.
+Pixel Perfect lets you increase the text size of iPhone and iPad apps on Mac.
 
 **Installation:**
 
