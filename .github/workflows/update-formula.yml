@@ -23,7 +23,7 @@ jobs:
 
       - name: Auto-merge existing PRs
         run: |
-          for pr in $(gh pr list --head "bump-" --state open --json number --jq '.[].number'); do
+          for pr in $(gh pr list --state open --json number,headRefName --jq '.[] | select(.headRefName | startswith("bump-")) | .number'); do
             echo "Merging existing PR $pr..."
             gh pr merge --merge --delete-branch "$pr" || echo "Failed to merge PR $pr"
           done
@@ -64,7 +64,7 @@ jobs:
         if: always()
         run: |
           sleep 5
-          for pr in $(gh pr list --head "bump-" --state open --json number --jq '.[].number'); do
+          for pr in $(gh pr list --state open --json number,headRefName --jq '.[] | select(.headRefName | startswith("bump-")) | .number'); do
             echo "Merging PR $pr..."
             gh pr merge --merge --delete-branch "$pr" || echo "Failed to merge PR $pr"
           done
