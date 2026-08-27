@@ -1,9 +1,9 @@
 cask "filezilla" do
   arch arm: "macos-arm64", intel: "macos-x86"
 
-  version "3.71.0"
-  sha256 arm:   "3dc5ced57173353ebd92b98b345324327d99827388aa0e2646108bf584779211",
-         intel: "47d1e6c5902f45065744db0922d1968bcf7f197a68eb1fbd387cb1d2601b256c"
+  version "3.71.1"
+  sha256 arm:   "73f081493dc528429d601cc0860900b9e9ded60b6a12fadee027d18939939238",
+         intel: "cd68b730fbbd6e9617dc94f166ea75c8b9da098b520c5dff6c8f6935655e6683"
 
   url "https://download.filezilla-project.org/client/FileZilla_#{version}_#{arch}.app.tar.bz2",
       user_agent: "FileZilla/#{version}"
