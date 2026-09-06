@@ -30,35 +30,32 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
-      - name: Update GeminiWatermarkTool
-        uses: dawidd6/action-homebrew-bump-formula@v7
-        with:
-          token: ${{ secrets.GH_TOKEN }}
-          formula: gemini-watermark-tool
-          tap: ${{ github.repository }}
-          livecheck: true
-          force: true
-          no_fork: true
+      - name: Update Formulae
+        env:
+          HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          git config --global user.name "John Lafitte"
+          git config --global user.email "jlafitte@users.noreply.github.com"
 
-      - name: Update gwt-mini
-        uses: dawidd6/action-homebrew-bump-formula@v7
-        with:
-          token: ${{ secrets.GH_TOKEN }}
-          formula: gwt-mini
-          tap: ${{ github.repository }}
-          livecheck: true
-          force: true
-          no_fork: true
+          brew tap "${{ github.repository }}"
 
-      - name: Update uad-ng
-        uses: dawidd6/action-homebrew-bump-formula@v7
-        with:
-          token: ${{ secrets.GH_TOKEN }}
-          formula: uad-ng
-          tap: ${{ github.repository }}
-          livecheck: true
-          force: true
-          no_fork: true
+          for formula in gemini-watermark-tool gwt-mini uad-ng; do
+            echo "Checking $formula for updates..."
+            latest_version=$(brew livecheck --formula --quiet --newer-only --json "${{ github.repository }}/$formula" | jq -r '.[0].version.latest // empty')
+            if [ -n "$latest_version" ]; then
+              echo "Found newer version $latest_version for $formula. Submitting PR..."
+              brew bump-formula-pr \
+                --no-audit \
+                --no-browse \
+                --no-fork \
+                --force \
+                --version="$latest_version" \
+                "${{ github.repository }}/$formula" || echo "Failed to bump $formula"
+            else
+              echo "$formula is already up to date."
+            fi
+          done
 
       - name: Auto-merge new PRs
         if: always()
