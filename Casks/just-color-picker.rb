@@ -1,6 +1,6 @@
 cask "just-color-picker" do
-  version "6.2"
-  sha256 "93c5b4f3caf6ce2a9171cb11f1045954f2771ad77a5a3537d13af80b28229264"
+  version "6.3"
+  sha256 "6693aa0efbce21885afc7f56429239d54ff27c64e1149f2d28a5852b80f46550"
 
   url "https://annystudio.com/software/colorpicker/jcpicker.dmg"
   name "Just Color Picker"
