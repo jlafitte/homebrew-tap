@@ -32,6 +32,16 @@ Minimal CLI-only version of GeminiWatermarkTool.
 brew install gwt-mini
 ```
 
+### [ROM Converto](https://github.com/DevYukine/rom-converto)
+
+Suite for converting, compressing, and decrypting ROMs.
+
+**Installation:**
+
+```bash
+brew install rom-converto
+```
+
 ### [Universal Android Debloater](https://github.com/Universal-Debloater-Alliance/universal-android-debloater-next-generation)
 
 A tool to debloat non-rooted Android devices.

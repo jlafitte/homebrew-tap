@@ -40,7 +40,7 @@ jobs:
 
           brew tap "${{ github.repository }}"
 
-          for formula in gemini-watermark-tool gwt-mini uad-ng; do
+          for formula in gemini-watermark-tool gwt-mini rom-converto uad-ng; do
             echo "Checking $formula for updates..."
             latest_version=$(brew livecheck --formula --quiet --newer-only --json "${{ github.repository }}/$formula" | jq -r '.[0].version.latest // empty')
             if [ -n "$latest_version" ]; then
