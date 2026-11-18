@@ -82,6 +82,16 @@ Pixel Perfect lets you increase the text size of iPhone and iPad apps on Mac.
 brew install --cask pixelperfect
 ```
 
+### [Stremio Native](https://www.stremio.com/)
+
+Open-source media center (native macOS client).
+
+**Installation:**
+
+```bash
+brew install --cask stremio-native
+```
+
 ## License
 
 This tap is licensed under the [MIT License](LICENSE).

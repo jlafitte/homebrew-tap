@@ -1,0 +1,34 @@
+name: Auto-update Stremio Native Cask
+on:
+  schedule:
+    - cron: "0 13 * * *" # Checks every day at 1 PM
+  workflow_dispatch:
+
+jobs:
+  update-stremio-native:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Tap
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
+      - name: Run Update Script
+        run: python scripts/update-stremio-native.py
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Casks/stremio-native.rb
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update Stremio Native to latest version"
+            git push
+          fi
